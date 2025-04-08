@@ -1,26 +1,25 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-// import { z } from 'zod';
 import { baseFormSchema, formSchema, type FormData } from './schemas';
 
-// Define precise schema types for each step
-type PersonalInfoKeys = { fullName: true; email: true; phone: true };
-type AddressKeys = { streetAddress: true; city: true; zipCode: true };
-type AccountKeys = { username: true; password: true; confirmPassword: true };
+// Step configuration with precise typing
+const STEP_VALIDATIONS = {
+  1: ['fullName', 'email', 'phone'] as const,
+  2: ['streetAddress', 'city', 'zipCode'] as const,
+  3: ['username', 'password', 'confirmPassword'] as const,
+};
 
-type PersonalInfoSchema = ReturnType<typeof baseFormSchema.pick<PersonalInfoKeys>>;
-type AddressSchema = ReturnType<typeof baseFormSchema.pick<AddressKeys>>;
-type AccountSchema = ReturnType<typeof baseFormSchema.pick<AccountKeys>>;
-type StepSchema = PersonalInfoSchema | AddressSchema | AccountSchema;
+type StepKey = keyof typeof STEP_VALIDATIONS;
+type FieldName = keyof FormData;
 
-type FormErrors = Partial<Record<keyof FormData, string>>;
+type FormErrors = Partial<Record<FieldName, string>>;
 
 type FormStore = {
   currentStep: number;
   formData: Partial<FormData>;
   errors: FormErrors;
   setCurrentStep: (step: number) => void;
-  updateFormData: <K extends keyof FormData>(data: Pick<FormData, K> | FormData) => void;
+  updateFormData: <K extends FieldName>(data: Pick<FormData, K> | FormData) => void;
   setErrors: (errors: FormErrors) => void;
   validateStep: (step: number) => boolean;
   validateForm: () => boolean;
@@ -36,50 +35,46 @@ export const useFormStore = create<FormStore>()(
 
       setCurrentStep: (step) => set({ currentStep: step }),
 
-      updateFormData: (data) => 
-        set((state) => ({ 
+      updateFormData: (data) =>
+        set((state) => ({
           formData: { ...state.formData, ...data },
-          // Clear errors for updated fields
           errors: Object.fromEntries(
             Object.entries(state.errors).filter(([key]) => !(key in data))
-          )
+          ),
         })),
 
       setErrors: (errors) => set({ errors }),
 
       validateStep: (step) => {
         const { formData } = get();
-        let stepSchema: StepSchema;
+        const fields = STEP_VALIDATIONS[step as StepKey];
+        
+        if (!fields) return true;
 
-        switch (step) {
-          case 1:
-            stepSchema = baseFormSchema.pick({ fullName: true, email: true, phone: true });
-            break;
-          case 2:
-            stepSchema = baseFormSchema.pick({ streetAddress: true, city: true, zipCode: true });
-            break;
-          case 3:
-            stepSchema = baseFormSchema.pick({ username: true, password: true, confirmPassword: true });
-            break;
-          default:
-            return true;
-        }
+        // Create type-safe pick object
+        const pickFields = fields.reduce((acc, field) => {
+          acc[field as FieldName] = true;
+          return acc;
+        }, {} as { [K in FieldName]?: true });
 
+        const stepSchema = baseFormSchema.pick(pickFields);
         const result = stepSchema.safeParse(formData);
+
         if (!result.success) {
           const newErrors: FormErrors = {};
           result.error.errors.forEach((err) => {
-            const fieldName = err.path[0] as keyof FormData;
+            const fieldName = err.path[0] as FieldName;
             newErrors[fieldName] = err.message;
           });
           set({ errors: { ...get().errors, ...newErrors } });
           return false;
         }
 
-        // Clear only current step errors when valid
-        const validFields = Object.keys(stepSchema.shape) as (keyof FormData)[];
+        // Type-safe error filtering using Set
+        const fieldSet = new Set(fields);
         const filteredErrors = Object.fromEntries(
-          Object.entries(get().errors).filter(([key]) => !validFields.includes(key as keyof FormData))
+          Object.entries(get().errors).filter(([key]) => 
+            !fieldSet.has(key as FieldName))
         ) as FormErrors;
         
         set({ errors: filteredErrors });
@@ -91,7 +86,7 @@ export const useFormStore = create<FormStore>()(
         if (!result.success) {
           const newErrors: FormErrors = {};
           result.error.errors.forEach((err) => {
-            const fieldName = err.path[0] as keyof FormData;
+            const fieldName = err.path[0] as FieldName;
             newErrors[fieldName] = err.message;
           });
           set({ errors: newErrors });
@@ -117,9 +112,17 @@ export const useFormStore = create<FormStore>()(
   )
 );
 
-// Utility function to get default form values
+// Utility function with proper return type
 export function getDefaultFormValues(): FormData {
-  return Object.keys(baseFormSchema.shape).reduce((acc, key) => {
-    return { ...acc, [key]: '' };
-  }, {} as FormData);
+  return {
+    fullName: '',
+    email: '',
+    phone: '',
+    streetAddress: '',
+    city: '',
+    zipCode: '',
+    username: '',
+    password: '',
+    confirmPassword: '',
+  };
 }
