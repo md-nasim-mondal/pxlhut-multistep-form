@@ -1,11 +1,19 @@
 'use client';
-
-import { useMultiStepForm } from '@/lib/form-store';
 import { FormNavigation } from '../FormNavigation';
+import { useFormContext } from 'react-hook-form';
 
-export function PersonalInfoStep() {
-  const { form, nextStep, prevStep, currentStep } = useMultiStepForm();
-  const { register, formState: { errors } } = form;
+interface PersonalInfoStepProps {
+  nextStep?: () => void;
+  prevStep?: () => void;
+  currentStep: number;
+}
+
+export function PersonalInfoStep({
+  nextStep,
+  prevStep,
+  currentStep
+}: PersonalInfoStepProps) {
+  const { register, formState: { errors } } = useFormContext();
 
   return (
     <div className="space-y-4">
@@ -17,7 +25,9 @@ export function PersonalInfoStep() {
           {...register('fullName')}
           className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
         />
-        {errors.fullName && <p className="text-red-500 text-sm">{errors.fullName.message}</p>}
+        {errors.fullName?.message && (
+          <p className="text-red-500 text-sm">{String(errors.fullName.message)}</p>
+        )}
       </div>
 
       <div>
@@ -27,7 +37,9 @@ export function PersonalInfoStep() {
           {...register('email')}
           className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
         />
-        {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
+        {errors.email?.message && (
+          <p className="text-red-500 text-sm">{String(errors.email.message)}</p>
+        )}
       </div>
 
       <div>
@@ -37,7 +49,9 @@ export function PersonalInfoStep() {
           {...register('phone')}
           className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
         />
-        {errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
+        {errors.phone?.message && (
+          <p className="text-red-500 text-sm">{String(errors.phone.message)}</p>
+        )}
       </div>
 
       <FormNavigation 

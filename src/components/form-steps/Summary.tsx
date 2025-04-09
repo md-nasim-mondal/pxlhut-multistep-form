@@ -1,11 +1,17 @@
 'use client';
-
-import { useMultiStepForm } from '@/lib/form-store';
 import { FormNavigation } from '../FormNavigation';
+import { useFormContext } from 'react-hook-form';
+interface SummaryStepProps {
+  submitForm?: () => void;
+  isSubmitting?: boolean;
+  currentStep: number;
+}
 
-export function SummaryStep() {
-  const { form, submitForm, isSubmitting } = useMultiStepForm();
-  const { watch } = form;
+export function SummaryStep({
+  submitForm,
+  isSubmitting,
+}: SummaryStepProps) {
+  const { watch } = useFormContext();
 
   const formData = watch();
 

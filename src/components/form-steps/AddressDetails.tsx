@@ -1,11 +1,18 @@
 'use client';
-
-import { useMultiStepForm } from '@/lib/form-store';
+import { useFormContext } from 'react-hook-form';
 import { FormNavigation } from '../FormNavigation';
+interface AddressDetailsStepProps {
+  nextStep?: () => void;
+  prevStep?: () => void;
+  currentStep: number;
+}
 
-export function AddressDetailsStep() {
-  const { form, nextStep, prevStep, currentStep } = useMultiStepForm();
-  const { register, formState: { errors } } = form;
+export function AddressDetailsStep({
+  nextStep,
+  prevStep,
+  currentStep
+}: AddressDetailsStepProps) {
+  const { register, formState: { errors } } = useFormContext();
 
   return (
     <div className="space-y-4">
@@ -18,7 +25,7 @@ export function AddressDetailsStep() {
           className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
         />
         {errors.streetAddress && (
-          <p className="text-red-500 text-sm">{errors.streetAddress.message}</p>
+          <p className="text-red-500 text-sm">{errors.streetAddress.message?.toString()}</p>
         )}
       </div>
 
@@ -29,7 +36,7 @@ export function AddressDetailsStep() {
           className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
         />
         {errors.city && (
-          <p className="text-red-500 text-sm">{errors.city.message}</p>
+          <p className="text-red-500 text-sm">{errors.city.message?.toString()}</p>
         )}
       </div>
 
@@ -40,7 +47,7 @@ export function AddressDetailsStep() {
           className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
         />
         {errors.zipCode && (
-          <p className="text-red-500 text-sm">{errors.zipCode.message}</p>
+          <p className="text-red-500 text-sm">{errors.zipCode.message?.toString()}</p>
         )}
       </div>
 

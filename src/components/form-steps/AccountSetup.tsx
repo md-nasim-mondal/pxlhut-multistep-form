@@ -1,11 +1,19 @@
 'use client';
-
-import { useMultiStepForm } from '@/lib/form-store';
 import { FormNavigation } from '../FormNavigation';
+import { useFormContext } from 'react-hook-form';
 
-export function AccountSetupStep() {
-  const { form, nextStep, prevStep, currentStep } = useMultiStepForm();
-  const { register, formState: { errors }, watch } = form;
+interface AccountSetupStepProps {
+  nextStep?: () => void;
+  prevStep?: () => void;
+  currentStep: number;
+}
+
+export function AccountSetupStep({
+  nextStep,
+  prevStep,
+  currentStep
+}: AccountSetupStepProps) {
+  const { register, formState: { errors }, watch } = useFormContext();
   const password = watch('password');
 
   return (
@@ -19,7 +27,7 @@ export function AccountSetupStep() {
           className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
         />
         {errors.username && (
-          <p className="text-red-500 text-sm">{errors.username.message}</p>
+          <p className="text-red-500 text-sm">{errors.username.message?.toString()}</p>
         )}
       </div>
 
@@ -31,7 +39,7 @@ export function AccountSetupStep() {
           className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
         />
         {errors.password && (
-          <p className="text-red-500 text-sm">{errors.password.message}</p>
+          <p className="text-red-500 text-sm">{errors.password.message?.toString()}</p>
         )}
       </div>
 
@@ -46,7 +54,7 @@ export function AccountSetupStep() {
           className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
         />
         {errors.confirmPassword && (
-          <p className="text-red-500 text-sm">{errors.confirmPassword.message}</p>
+          <p className="text-red-500 text-sm">{errors.confirmPassword.message?.toString()}</p>
         )}
       </div>
 
