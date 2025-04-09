@@ -1,12 +1,10 @@
 'use client';
-
 import { useMultiStepForm } from '@/lib/form-store';
 import { FormNavigation } from '../FormNavigation';
 
 export function SummaryStep() {
   const { form, submitForm, isSubmitting } = useMultiStepForm();
   const { watch } = form;
-
   const formData = watch();
 
   return (

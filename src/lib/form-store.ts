@@ -3,12 +3,12 @@ import { persist } from 'zustand/middleware';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formSchema, type FormData } from './schemas';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 
 type FormStore = {
   currentStep: number;
   setCurrentStep: (step: number) => void;
-  clearStore: () => void;
+  resetForm: () => void;
 };
 
 export const useFormStore = create<FormStore>()(
@@ -16,27 +16,19 @@ export const useFormStore = create<FormStore>()(
     (set) => ({
       currentStep: 1,
       setCurrentStep: (step) => set({ currentStep: step }),
-      clearStore: () => set({ currentStep: 1 }),
+      resetForm: () => set({ currentStep: 1 }),
     }),
     { name: 'form-storage' }
   )
 );
 
-// API simulation function
 const submitFormData = async (data: FormData) => {
   await new Promise(resolve => setTimeout(resolve, 1000));
   return { success: true, data };
 };
 
-type StepFields = {
-  1: ['fullName', 'email', 'phone'],
-  2: ['streetAddress', 'city', 'zipCode'],
-  3: ['username', 'password', 'confirmPassword']
-};
-
 export function useMultiStepForm() {
-  const { currentStep, setCurrentStep, clearStore } = useFormStore();
-  const queryClient = useQueryClient();
+  const { currentStep, setCurrentStep, resetForm } = useFormStore();
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -56,20 +48,20 @@ export function useMultiStepForm() {
   const mutation = useMutation({
     mutationFn: submitFormData,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['form'] });
-      clearStore();
+      resetForm();
     },
   });
 
   const validateCurrentStep = async () => {
-    const stepFields: StepFields = {
+    const stepFields = {
       1: ['fullName', 'email', 'phone'],
       2: ['streetAddress', 'city', 'zipCode'],
       3: ['username', 'password', 'confirmPassword']
     };
 
-    const fields = stepFields[currentStep as keyof StepFields];
-    return await form.trigger(fields);
+    const fields = stepFields[currentStep as keyof typeof stepFields];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return await form.trigger(fields as any);
   };
 
   const nextStep = async () => {

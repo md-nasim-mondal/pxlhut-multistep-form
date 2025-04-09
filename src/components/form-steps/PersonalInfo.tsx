@@ -1,10 +1,9 @@
 'use client';
-
 import { useMultiStepForm } from '@/lib/form-store';
 import { FormNavigation } from '../FormNavigation';
 
 export function PersonalInfoStep() {
-  const { form, nextStep, prevStep, currentStep } = useMultiStepForm();
+  const { form, nextStep, currentStep } = useMultiStepForm();
   const { register, formState: { errors } } = form;
 
   return (
@@ -42,7 +41,6 @@ export function PersonalInfoStep() {
 
       <FormNavigation 
         onNext={nextStep} 
-        onPrev={currentStep > 1 ? prevStep : undefined}
         currentStep={currentStep}
       />
     </div>
