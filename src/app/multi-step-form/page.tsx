@@ -10,9 +10,7 @@ import { FormProvider } from "react-hook-form";
 export default function MultiStepForm() {
   const { currentStep, form, nextStep, prevStep, submitForm, isSubmitting } =
     useMultiStepForm();
-  const { handleSubmit, watch } = form;
-
-  console.log(watch());
+  const { handleSubmit } = form;
 
   return (
     <div className='max-w-md mx-auto p-4 space-y-6'>
