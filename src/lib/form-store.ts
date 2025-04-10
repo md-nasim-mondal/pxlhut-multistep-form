@@ -1,9 +1,9 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { formSchema, type FormData } from './schemas';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { formSchema, type FormData } from "./schemas";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 
 type FormStore = {
   currentStep: number;
@@ -18,54 +18,54 @@ export const useFormStore = create<FormStore>()(
       setCurrentStep: (step) => set({ currentStep: step }),
       clearStore: () => set({ currentStep: 1 }),
     }),
-    { name: 'form-storage' }
+    { name: "form-storage" }
   )
 );
 
 // API simulation function
 const submitFormData = async (data: FormData) => {
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   return { success: true, data };
 };
 
 type StepFields = {
-  1: ['fullName', 'email', 'phone'],
-  2: ['streetAddress', 'city', 'zipCode'],
-  3: ['username', 'password', 'confirmPassword']
+  1: ["fullName", "email", "phone"];
+  2: ["streetAddress", "city", "zipCode"];
+  3: ["username", "password", "confirmPassword"];
 };
 
 export function useMultiStepForm() {
   const { currentStep, setCurrentStep, clearStore } = useFormStore();
   const queryClient = useQueryClient();
-  
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: '',
-      email: '',
-      phone: '',
-      streetAddress: '',
-      city: '',
-      zipCode: '',
-      username: '',
-      password: '',
-      confirmPassword: '',
+      fullName: "",
+      email: "",
+      phone: "",
+      streetAddress: "",
+      city: "",
+      zipCode: "",
+      username: "",
+      password: "",
+      confirmPassword: "",
     },
   });
 
   const mutation = useMutation({
     mutationFn: submitFormData,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['form'] });
+      queryClient.invalidateQueries({ queryKey: ["form"] });
       clearStore();
     },
   });
 
   const validateCurrentStep = async () => {
     const stepFields: StepFields = {
-      1: ['fullName', 'email', 'phone'],
-      2: ['streetAddress', 'city', 'zipCode'],
-      3: ['username', 'password', 'confirmPassword']
+      1: ["fullName", "email", "phone"],
+      2: ["streetAddress", "city", "zipCode"],
+      3: ["username", "password", "confirmPassword"],
     };
 
     const fields = stepFields[currentStep as keyof StepFields];
@@ -84,12 +84,12 @@ export function useMultiStepForm() {
     mutation.mutate(data);
   });
 
-  return { 
-    form, 
-    currentStep, 
-    nextStep, 
-    prevStep, 
+  return {
+    form,
+    currentStep,
+    nextStep,
+    prevStep,
     submitForm,
-    isSubmitting: mutation.isPending 
+    isSubmitting: mutation.isPending,
   };
 }
